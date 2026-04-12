@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { validateSignin, type UserSignInformation } from "../utils/validate";
 import useForm from "../hooks/useForm";
+import { validateSignin, type UserSignInformation } from "../utils/validate";
+import { postSignin } from "../apis/auth";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { LOCAL_STORAGE_KEY } from "../constants/key";
 
 const LoginPage = () => {
+    const { setItem } = useLocalStorage(LOCAL_STORAGE_KEY.accessToken);
     const { values, errors, touched, getInputProps } = useForm<UserSignInformation>({
         initialValue: {
             email: "",
@@ -11,13 +14,20 @@ const LoginPage = () => {
         validate: validateSignin,
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         console.log(values);
+        try {
+            const response = await postSignin(values);
+            setItem(response.data.accessToken);
+        } catch (error) {
+            alert(error?.message);
+        }
+        console.log(Response);
     };
 
     // 오류가 하나라도 있거나, 입력값이 비어있으면 버튼을 비활성화
     const isDisabled =
-        Object.values(errors || {}).some((error) => error,length > 0) ||    // 오류가 있으면 true
+        Object.values(errors || {}).some((error) => error, length > 0) ||    // 오류가 있으면 true
         Object.values(values).some((value) => value === "");    // 입력값이 비어있으면 true
     return (
         <div className="flex flex-col items-center justify-center h-full gap-4">
@@ -41,10 +51,10 @@ const LoginPage = () => {
                 />
                 {errors?.password && touched?.password && (
                     <div className="text-red-500 text-sm">{errors.password}</div>)}
-                <button 
-                    type='button' 
-                    onClick={handleSubmit} 
-                    disabled={isDisabled} 
+                <button
+                    type='button'
+                    onClick={handleSubmit}
+                    disabled={isDisabled}
                     className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-300">로그인</button>
             </div>
         </div>
