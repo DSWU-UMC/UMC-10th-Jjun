@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type CommonResponse<T> = {
     email: ReactNode;
     name: ReactNode;
